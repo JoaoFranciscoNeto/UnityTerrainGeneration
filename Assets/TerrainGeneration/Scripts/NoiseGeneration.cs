@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class NoiseGeneration : MonoBehaviour {
 
+    public enum NormalizeMode { Local, Global }
+
+    public static NormalizeMode normalizeMode;
+
     public Vector2 noiseSize;
     NoiseData[] noiseData;
 
@@ -18,16 +22,16 @@ public class NoiseGeneration : MonoBehaviour {
 
     public Texture2D Get2DTexture()
     {
-        return Create2DTexture(CombinedNoiseMap());
+        return Create2DTexture(CombinedNoiseMap(Vector2.zero));
     }
 
-    public float[,] CombinedNoiseMap()
+    public float[,] CombinedNoiseMap(Vector2 center)
     {
         List<float[,]> noiseMapList = new List<float[,]>();
 
         foreach(NoiseData data in noiseData)
         {
-            noiseMapList.Add(GenerateNoiseMap(data));
+            noiseMapList.Add(GenerateNoiseMap(data,center));
         }
 
         float[,] combinedNoiseMap = new float[(int)noiseSize.x, (int)noiseSize.y];
@@ -49,7 +53,7 @@ public class NoiseGeneration : MonoBehaviour {
         return combinedNoiseMap;
     }
 
-    float[,] GenerateNoiseMap(NoiseData data)
+    float[,] GenerateNoiseMap(NoiseData data, Vector2 center)
     {
         float[,] noiseMap = new float[(int)noiseSize.x, (int)noiseSize.y];
 
@@ -62,14 +66,17 @@ public class NoiseGeneration : MonoBehaviour {
         {
             prng = new System.Random();
         }
-        Vector2 rngOffset = new Vector2(prng.Next(-100000, 100000), prng.Next(-100000, 100000));
+
+        float offsetX = prng.Next(-100000, 100000) + center.x + data.offset.x;
+        float offsetY = prng.Next(-100000, 100000) + center.y + data.offset.y;
+        
         
         if (data.scaleRatio == Vector2.zero )
         {
             data.scaleRatio = Vector2.one;
         }
 
-        if (data.scale == 0)
+        if (data.scale <= 0)
         {
             data.scale = 1f;
         }
@@ -86,9 +93,9 @@ public class NoiseGeneration : MonoBehaviour {
             for (int x = 0; x < noiseSize.x; x++)
             {
 
-                float sampleX = (float)((x - halfWidth) / data.scale * data.scaleRatio.x) + rngOffset.x;
-                float sampleY = (float)((y - halfHeight) / data.scale * data.scaleRatio.y) + rngOffset.y;
-                float perlinValue = Mathf.PerlinNoise(sampleX, sampleY) * 2 - 1;
+                float sampleX = (float)((x - halfWidth + offsetX) / data.scale * data.scaleRatio.x);
+                float sampleY = (float)((y - halfHeight - offsetY) / data.scale * data.scaleRatio.y);
+                float perlinValue = Mathf.PerlinNoise(sampleX, sampleY);
                 
                 if (perlinValue > maxNoiseHeight)
                     maxNoiseHeight = perlinValue;
@@ -99,12 +106,18 @@ public class NoiseGeneration : MonoBehaviour {
                 noiseMap[x, y] = perlinValue;
             }
         }
-
+        
         for (int y = 0; y < noiseSize.y; y++)
         {
             for (int x = 0; x < noiseSize.x; x++)
             {
-                noiseMap[x, y] = data.curve.Evaluate(Mathf.InverseLerp(minNoiseHeight, maxNoiseHeight, noiseMap[x, y]));
+                if (normalizeMode == NormalizeMode.Local)
+                {
+                    noiseMap[x, y] = data.curve.Evaluate(Mathf.InverseLerp(minNoiseHeight, maxNoiseHeight, noiseMap[x, y]));
+                } else
+                {
+                    float normalizedHeight = data.curve.Evaluate(noiseMap[x, y]);
+                }
             }
         }
 

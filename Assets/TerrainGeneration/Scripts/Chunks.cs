@@ -33,7 +33,7 @@ public class Chunk {
 
         SetVisible(false);
 
-        world.RequestMapData(OnMapDataReceived);
+        world.RequestMapData(position, OnMapDataReceived);
     }
 
     void OnMapDataReceived(MapData mapData)

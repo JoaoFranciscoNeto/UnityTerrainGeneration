@@ -31,7 +31,9 @@ public class World : MonoBehaviour {
     private void Start()
     {
         noiseGen = GetComponent<NoiseGeneration>();
+
         noiseGen.SetNoiseSize(Vector2.one * mapChunkSize);
+        NoiseGeneration.normalizeMode = NoiseGeneration.NormalizeMode.Global;
     }
 
     private void Update()
@@ -57,6 +59,11 @@ public class World : MonoBehaviour {
 
     public void DisplayMap()
     {
+        noiseGen = GetComponent<NoiseGeneration>();
+
+        noiseGen.SetNoiseSize(Vector2.one * mapChunkSize);
+        NoiseGeneration.normalizeMode = NoiseGeneration.NormalizeMode.Global;
+
         MapData mapData = GenerateMapData();
         MapDisplay display = FindObjectOfType<MapDisplay>();
 
@@ -72,19 +79,19 @@ public class World : MonoBehaviour {
 
     }
 
-    public void RequestMapData(Action<MapData> callback)
+    public void RequestMapData(Vector2 center, Action<MapData> callback)
     {
         ThreadStart threadStart = delegate
         {
-            MapDataThread(callback);
+            MapDataThread(center, callback);
         };
 
         new Thread(threadStart).Start();
     }
 
-    void MapDataThread(Action<MapData> callback)
+    void MapDataThread(Vector2 center, Action<MapData> callback)
     {
-        MapData mapData = GenerateMapData();
+        MapData mapData = GenerateMapData(center);
         lock (mapDataThreadInfoQueue)
         {
             mapDataThreadInfoQueue.Enqueue(new MapThreadInfo<MapData>(callback, mapData));
@@ -110,13 +117,18 @@ public class World : MonoBehaviour {
 
     MapData GenerateMapData()
     {
+        return GenerateMapData(Vector2.zero);
+    }
+
+    MapData GenerateMapData(Vector2 center)
+    {
         // Generate texture based on display size
         if (noiseGen == null)
             noiseGen = GetComponent<NoiseGeneration>();
 
         noiseGen.SetNoiseData(noiseData);
 
-        float[,] heightMap = noiseGen.CombinedNoiseMap();
+        float[,] heightMap = noiseGen.CombinedNoiseMap(center);
         return new MapData(heightMap);
     }
 
