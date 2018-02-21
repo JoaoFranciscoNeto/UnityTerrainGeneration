@@ -2,58 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NoiseGeneration : MonoBehaviour {
-
-    public enum NormalizeMode { Local, Global }
-
-    public static NormalizeMode normalizeMode;
-
-    public Vector2 noiseSize;
-    NoiseData[] noiseData;
-
-    public void SetNoiseData(NoiseData[] noiseData)
+public class TextureGeneration {
+    
+    public static Texture2D Generate2DTexture(NoiseData noiseData, Vector2 texSize)
     {
-        this.noiseData = noiseData;
-    }
-    public void SetNoiseSize(Vector2 noiseSize)
-    {
-        this.noiseSize = noiseSize;
+        return Create2DTexture(GenerateNoiseMap(noiseData, Vector2.zero, texSize));
     }
 
-    public Texture2D Get2DTexture()
-    {
-        return Create2DTexture(CombinedNoiseMap(Vector2.zero));
-    }
-
-    public float[,] CombinedNoiseMap(Vector2 center)
-    {
-        List<float[,]> noiseMapList = new List<float[,]>();
-
-        foreach(NoiseData data in noiseData)
-        {
-            noiseMapList.Add(GenerateNoiseMap(data,center));
-        }
-
-        float[,] combinedNoiseMap = new float[(int)noiseSize.x, (int)noiseSize.y];
-
-        int mapCount = noiseData.Length;
-
-        for (int y = 0; y < noiseSize.y; y++)
-        {
-            for (int x = 0; x < noiseSize.x; x++)
-            {
-                for (int i = 0; i < mapCount; i++)
-                {
-                    combinedNoiseMap[x, y] += noiseMapList[i][x, y];
-                }
-                combinedNoiseMap[x, y] /= mapCount;
-            }
-        }
-
-        return combinedNoiseMap;
-    }
-
-    float[,] GenerateNoiseMap(NoiseData data, Vector2 center)
+    public static float[,] GenerateNoiseMap(NoiseData data, Vector2 center, Vector2 noiseSize)
     {
         float[,] noiseMap = new float[(int)noiseSize.x, (int)noiseSize.y];
 
@@ -66,12 +22,11 @@ public class NoiseGeneration : MonoBehaviour {
         {
             prng = new System.Random();
         }
-        
 
         Vector2 rngOffset = new Vector2(prng.Next(-100000, 100000), prng.Next(-100000, 100000));
-        
-        
-        if (data.scaleRatio == Vector2.zero )
+
+
+        if (data.scaleRatio == Vector2.zero)
         {
             data.scaleRatio = Vector2.one;
         }
@@ -96,7 +51,7 @@ public class NoiseGeneration : MonoBehaviour {
                 float sampleX = (float)((x - halfWidth) / data.scale * data.scaleRatio.x) + rngOffset.x;
                 float sampleY = (float)((y - halfHeight) / data.scale * data.scaleRatio.y) + rngOffset.y;
                 float perlinValue = Mathf.PerlinNoise(sampleX, sampleY);
-                
+
                 if (perlinValue > maxNoiseHeight)
                     maxNoiseHeight = perlinValue;
 
@@ -106,25 +61,19 @@ public class NoiseGeneration : MonoBehaviour {
                 noiseMap[x, y] = perlinValue;
             }
         }
-        
+
         for (int y = 0; y < noiseSize.y; y++)
         {
             for (int x = 0; x < noiseSize.x; x++)
             {
-                if (normalizeMode == NormalizeMode.Local)
-                {
-                    noiseMap[x, y] = data.curve.Evaluate(Mathf.InverseLerp(minNoiseHeight, maxNoiseHeight, noiseMap[x, y]));
-                } else
-                {
                     float normalizedHeight = data.curve.Evaluate(noiseMap[x, y]);
-                }
             }
         }
 
         return noiseMap;
     }
 
-    Texture2D Create2DTexture(float[,] heightMap)
+    static Texture2D Create2DTexture(float[,] heightMap)
     {
         int width = heightMap.GetLength(0);
         int height = heightMap.GetLength(1);
@@ -145,25 +94,5 @@ public class NoiseGeneration : MonoBehaviour {
         texture.SetPixels(colorMap);
         texture.Apply();
         return texture;
-    }
-
-}
-
-[System.Serializable]
-public class NoiseData
-{
-    public int seed;
-    public float scale;
-    public Vector2 scaleRatio;
-    public Vector2 offset;
-    public AnimationCurve curve;
-
-    public NoiseData(float scale, Vector2 scaleRatio)
-    {
-        this.seed = 1;
-        this.scale = scale;
-        this.scaleRatio = scaleRatio;
-        this.offset = Vector2.zero;
-        this.curve = AnimationCurve.Linear(0, 0, 1, 1);
     }
 }
