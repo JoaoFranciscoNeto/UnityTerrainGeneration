@@ -19,13 +19,12 @@ namespace NodeEditorFramework.TextureGenerator
         public override string Title { get { return "Noise Generation"; } }
         public override Vector2 DefaultSize { get { return new Vector2(250, 150); } }
 
-        [ValueConnectionKnob("Texture", Direction.Out, "Texture")]
-        public ValueConnectionKnob textureOutput;
-        /*
         [ValueConnectionKnob("HeightMap", Direction.Out, "HeightMap")]
-        public ValueConnectionKnob heightMapOutput;
-        */
-        public Texture2D tex;
+        public ValueConnectionKnob heightMapType;
+
+        public HeightMap HeightMap;
+
+        Texture2D tex;
 
         public float scale;
         public Vector2 scaleRatio;
@@ -35,8 +34,8 @@ namespace NodeEditorFramework.TextureGenerator
         public override void NodeGUI()
         {
 
-            textureOutput.DisplayLayout();
-            //heightMapOutput.DisplayLayout();
+            heightMapType.DisplayLayout();
+
 
             scale = RTEditorGUI.Slider("Texture Scale", scale, 1, 100);
             scaleRatio = RTEditorGUI.Vector2Field("Scale Ratio", scaleRatio);
@@ -44,7 +43,6 @@ namespace NodeEditorFramework.TextureGenerator
 
             if (GUI.changed)
             { // Texture has been changed
-                tex = TextureGeneration.Generate2DTexture(new NoiseData(scale, scaleRatio), textureSize);
 
                 NodeEditor.curNodeCanvas.OnNodeChange(this);
             }
@@ -52,8 +50,9 @@ namespace NodeEditorFramework.TextureGenerator
 
         public override bool Calculate()
         {
-            textureOutput.SetValue(tex);
-            //heightMapOutput.SetValue(TextureGeneration.GenerateNoiseMap(new NoiseData(scale, scaleRatio), Vector2.zero, textureSize));
+            HeightMap = TextureGeneration.GenerateHeightMap(new NoiseData(scale, scaleRatio), textureSize, 20);
+            heightMapType.SetValue(HeightMap);
+
             return true;
         }
     }

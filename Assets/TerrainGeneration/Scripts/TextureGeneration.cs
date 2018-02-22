@@ -1,15 +1,23 @@
-﻿using System.Collections;
+﻿using NodeEditorFramework.TextureGenerator;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class TextureGeneration {
-    
-    public static Texture2D Generate2DTexture(NoiseData noiseData, Vector2 texSize)
-    {
-        return Create2DTexture(GenerateNoiseMap(noiseData, Vector2.zero, texSize));
-    }
 
-    public static float[,] GenerateNoiseMap(NoiseData data, Vector2 center, Vector2 noiseSize)
+    #region Noise
+    public static HeightMap GenerateHeightMap(NoiseData data, Vector2 texSize, float multiplier)
+    {
+        HeightMap heightMap = new HeightMap();
+
+        heightMap.heightMap = GenerateNoiseData(data, Vector2.zero, texSize);
+        heightMap.texture = Create2DTexture(heightMap.heightMap);
+        heightMap.heightMultiplier = multiplier;
+
+        return heightMap;
+    }    
+
+    static float[,] GenerateNoiseData(NoiseData data, Vector2 center, Vector2 noiseSize)
     {
         float[,] noiseMap = new float[(int)noiseSize.x, (int)noiseSize.y];
 
@@ -72,6 +80,12 @@ public class TextureGeneration {
 
         return noiseMap;
     }
+
+    #endregion
+
+    #region Sine
+
+    #endregion
 
     static Texture2D Create2DTexture(float[,] heightMap)
     {

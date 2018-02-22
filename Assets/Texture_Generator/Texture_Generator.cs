@@ -20,8 +20,17 @@ namespace NodeEditorFramework.TextureGenerator
     public class HeightMapType : ValueConnectionType
     {
         public override string Identifier { get { return "HeightMap"; } }
-        public override Type Type { get { return typeof(float[,]); } }
+        public override Type Type { get { return typeof(HeightMap); } }
         public override Color Color { get { return Color.magenta; } }
+
+    }
+
+    public class HeightMap
+    {
+        public float[,] heightMap;
+        public Texture2D texture;
+        public float heightMultiplier;
+
 
     }
 
