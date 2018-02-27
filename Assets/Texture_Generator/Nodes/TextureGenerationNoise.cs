@@ -37,7 +37,7 @@ namespace NodeEditorFramework.TextureGenerator
             heightMapType.DisplayLayout();
 
 
-            scale = RTEditorGUI.Slider("Texture Scale", scale, 1, 100);
+            scale = RTEditorGUI.Slider("Texture Scale", scale, 1, 1000);
             scaleRatio = RTEditorGUI.Vector2Field("Scale Ratio", scaleRatio);
             textureSize = RTEditorGUI.Vector2Field("Texture Size", textureSize);
 
@@ -50,7 +50,7 @@ namespace NodeEditorFramework.TextureGenerator
 
         public override bool Calculate()
         {
-            HeightMap = TextureGeneration.GenerateHeightMap(new NoiseData(scale, scaleRatio), textureSize, 20);
+            HeightMap = TextureGeneration.GenerateHeightMapNoise(new NoiseData(scale, scaleRatio), textureSize);
             heightMapType.SetValue(HeightMap);
 
             return true;

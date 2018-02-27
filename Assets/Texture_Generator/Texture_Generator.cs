@@ -29,8 +29,18 @@ namespace NodeEditorFramework.TextureGenerator
     {
         public float[,] heightMap;
         public Texture2D texture;
-        public float heightMultiplier;
 
+        public HeightMap(float[,] heightMap)
+        {
+            this.heightMap = heightMap;
+            this.texture = TextureGeneration.Create2DTexture(heightMap);
+        }
+
+        public HeightMap(float[,] heightMap, Texture2D texture)
+        {
+            this.heightMap = heightMap;
+            this.texture = texture;
+        }
 
     }
 

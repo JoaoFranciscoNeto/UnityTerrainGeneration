@@ -17,13 +17,20 @@ namespace NodeEditorFramework.TextureGenerator
         public ValueConnectionKnob inputKnob;
 
         HeightMap heightMap;
+        
         MapDisplay mapDisplay;
+
+        private void Awake()
+        {
+            mapDisplay = FindObjectOfType<MapDisplay>();
+        }
+
+
 
         public override void NodeGUI()
         {
             inputKnob.DisplayLayout();
-
-            mapDisplay = RTEditorGUI.ObjectField(mapDisplay, true);
+            
 
         }
 
@@ -31,7 +38,7 @@ namespace NodeEditorFramework.TextureGenerator
         {
 
             heightMap = inputKnob.connected() ? inputKnob.GetValue<HeightMap>() : null;
-            mapDisplay.DrawMesh(MeshGeneration.GenerateMeshFromHeigthMap(heightMap.heightMap, heightMap.heightMultiplier));
+            mapDisplay.DrawMesh(MeshGeneration.GenerateMeshFromHeigthMap(heightMap.heightMap, 20));
 
             return true;
         }

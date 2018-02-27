@@ -4,19 +4,32 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class TextureGeneration {
-
-    #region Noise
-    public static HeightMap GenerateHeightMap(NoiseData data, Vector2 texSize, float multiplier)
+    
+    public static HeightMap GenerateHeightMapNoise(NoiseData data, Vector2 texSize)
     {
-        HeightMap heightMap = new HeightMap();
 
-        heightMap.heightMap = GenerateNoiseData(data, Vector2.zero, texSize);
-        heightMap.texture = Create2DTexture(heightMap.heightMap);
-        heightMap.heightMultiplier = multiplier;
+        float[,] heightMapData = GenerateNoiseData(data, Vector2.zero, texSize);
+
+        HeightMap heightMap = new HeightMap(heightMapData);
 
         return heightMap;
-    }    
+    }
 
+    public static HeightMap GenerateHeightMapSine(float scale, Vector2 texSize)
+    {
+        float[,] heightMapData = GenerateSineData(scale, texSize);
+
+        HeightMap heightMap = new HeightMap(heightMapData);
+
+        return heightMap;
+    }
+
+    public static HeightMap GenerateHeigthMapWave(float xPeriod, float yPeriod, float turbPower, float turbSize, Vector2 texSize)
+    {
+        return new HeightMap(GenerateWaveData(xPeriod, yPeriod, turbPower, turbSize, texSize));
+    }
+
+    #region Noise
     static float[,] GenerateNoiseData(NoiseData data, Vector2 center, Vector2 noiseSize)
     {
         float[,] noiseMap = new float[(int)noiseSize.x, (int)noiseSize.y];
@@ -80,14 +93,79 @@ public class TextureGeneration {
 
         return noiseMap;
     }
-
     #endregion
 
     #region Sine
 
+    static float[,] GenerateSineData(float scale, Vector2 noiseSize)
+    {
+        float[,] noiseMap = new float[(int)noiseSize.x, (int)noiseSize.y];
+
+
+
+        for (int y = 0; y < noiseSize.y; y++)
+        {
+            for (int x = 0; x < noiseSize.x; x++)
+            {
+                float xyValue = (x * scale + y * scale);
+                noiseMap[x, y] = Mathf.Sin(xyValue * Mathf.PI);
+            }
+        }
+
+        return noiseMap;
+    }
+
     #endregion
 
-    static Texture2D Create2DTexture(float[,] heightMap)
+    static float[,] GenerateWaveData(float xPeriod, float yPeriod, float turbPower, float turbSize, Vector2 noiseSize)
+    {
+
+        float[,] noiseMap = new float[(int)noiseSize.x, (int)noiseSize.y];
+
+
+        for (int y = 0; y < noiseSize.y; y++)
+        {
+            for (int x = 0; x < noiseSize.x; x++)
+            {
+                float xyValue = x * xPeriod / noiseSize.x + y * yPeriod / noiseSize.y + turbPower * turbulence(x, y, turbSize)/256.0f;
+                noiseMap[x, y] = Mathf.Abs(DuneWave(xyValue,.72f));
+            }
+        }
+        return noiseMap;
+
+    }
+
+    static float DuneWave(float value, float Xm)
+    {
+        value = value % 1;
+
+        float ret = 0;
+
+        if (value <= Xm)
+        {
+            ret = .5f * (1 - Mathf.Cos(Mathf.PI * value / Xm));
+        } else {
+            ret = .5f * (1 - Mathf.Cos(Mathf.PI * ((value - 1)/(Xm-1))));
+        }
+
+        return ret;
+    }
+
+    static float turbulence(float x, float y, float size)
+    {
+        float value = 0;
+        float initSize = size;
+
+        while (size>=1)
+        {
+            value += Mathf.PerlinNoise(x / size, y / size) * size;
+            size /= 2.0f;
+        }
+
+        return (128 * value / initSize);
+    }
+
+    public static Texture2D Create2DTexture(float[,] heightMap)
     {
         int width = heightMap.GetLength(0);
         int height = heightMap.GetLength(1);

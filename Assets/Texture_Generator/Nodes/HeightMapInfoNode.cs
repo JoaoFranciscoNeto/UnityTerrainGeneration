@@ -29,7 +29,6 @@ namespace NodeEditorFramework.TextureGenerator
                 RTTextureViz.DrawTexture(heightMap.texture, 64);
                 GUILayout.Label("Size: " + heightMap.texture.width + "x" + heightMap.texture.height + "");
                 GUILayout.Label("Format: " + heightMap.texture.format);
-                GUILayout.Label("Height Multiplier: " + heightMap.heightMultiplier);
             }
         }
 

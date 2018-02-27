@@ -8,6 +8,7 @@ public class MapDisplay : MonoBehaviour {
 
     public Renderer planeRenderer;
     public MeshFilter meshFilter;
+    public GameObject meshRenderer;
 
     public void DrawTexture(Texture2D texture)
     {
@@ -17,6 +18,8 @@ public class MapDisplay : MonoBehaviour {
 
     public void DrawMesh(MeshData data)
     {
-        meshFilter.sharedMesh = data.CreateMesh();
+        Mesh m = data.CreateMesh();
+        meshRenderer.GetComponent<MeshFilter>().sharedMesh = m;
+        //meshRenderer.GetComponent<MeshCollider>().sharedMesh = m;
     }
 }
