@@ -143,6 +143,7 @@ public class World : MonoBehaviour {
             this.parameter = parameter;
         }
     }
+    
 }
 
 public struct MapData

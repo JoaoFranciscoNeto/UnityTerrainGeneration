@@ -40,6 +40,9 @@ namespace NodeEditorFramework.TextureGenerator
             heightMap = inputKnob.connected() ? inputKnob.GetValue<HeightMap>() : null;
             mapDisplay.DrawMesh(MeshGeneration.GenerateMeshFromHeigthMap(heightMap.heightMap, 20));
 
+
+            
+
             return true;
         }
     }

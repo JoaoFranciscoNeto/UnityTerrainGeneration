@@ -145,7 +145,7 @@ public class TextureGeneration {
         {
             ret = .5f * (1 - Mathf.Cos(Mathf.PI * value / Xm));
         } else {
-            ret = .5f * (1 - Mathf.Cos(Mathf.PI * ((value - 1)/(Xm-1))));
+            ret = (1 - Mathf.Cos((Mathf.PI/2.0f) * ((value - 1)/(Xm-1))));
         }
 
         return ret;
