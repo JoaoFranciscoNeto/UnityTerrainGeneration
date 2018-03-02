@@ -20,6 +20,6 @@ public class MapDisplay : MonoBehaviour {
     {
         Mesh m = data.CreateMesh();
         meshRenderer.GetComponent<MeshFilter>().sharedMesh = m;
-        meshRenderer.GetComponent<MeshCollider>().sharedMesh = m;
+        //meshRenderer.GetComponent<MeshCollider>().sharedMesh = m;
     }
 }

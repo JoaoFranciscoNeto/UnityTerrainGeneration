@@ -50,6 +50,10 @@ namespace NodeEditorFramework.TerrainGenerator
 
             tex = Create2DTexture(GenerateData());
 
+            GameObject visualizer = GameObject.FindGameObjectWithTag("TerrainVisualizer");
+
+            visualizer.GetComponent<MapDisplay>().DrawMesh(MeshGeneration.GenerateMeshFromHeigthMap(GenerateData(), 15));
+
             return true;
         }
 
