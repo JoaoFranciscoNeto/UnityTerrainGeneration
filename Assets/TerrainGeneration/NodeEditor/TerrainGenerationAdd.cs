@@ -28,6 +28,8 @@ namespace NodeEditorFramework.TerrainGenerator
         TerrainFunc input1;
         TerrainFunc input2;
 
+        float influence = .5f;
+
         public override void NodeGUI()
         {
 
@@ -44,7 +46,10 @@ namespace NodeEditorFramework.TerrainGenerator
 
             GUILayout.EndVertical();
             GUILayout.EndHorizontal();
-            
+
+            influence = RTEditorGUI.Slider("Influence", influence, 0, 1);
+
+
             if (GUI.changed)
             {
                 NodeEditor.curNodeCanvas.OnNodeChange(this);
@@ -58,7 +63,7 @@ namespace NodeEditorFramework.TerrainGenerator
             input1 = inKnob1.GetValue<TerrainFunc>();
             input2 = inKnob2.GetValue<TerrainFunc>();
 
-            outKnob.SetValue(new AddTerrain(input1, input2));
+            outKnob.SetValue(new AddTerrain(input1, input2, influence));
 
             return true;
         }
@@ -67,11 +72,13 @@ namespace NodeEditorFramework.TerrainGenerator
         {
             TerrainFunc f1;
             TerrainFunc f2;
+            float influence;
 
-            public AddTerrain(TerrainFunc f1, TerrainFunc f2)
+            public AddTerrain(TerrainFunc f1, TerrainFunc f2, float influence)
             {
                 this.f1 = f1;
                 this.f2 = f2;
+                this.influence = influence;
 
                 generateFunc = Add;
             }
@@ -80,7 +87,7 @@ namespace NodeEditorFramework.TerrainGenerator
             {
                 float v1 = f1.generateFunc(x, y);
                 float v2 = f2.generateFunc(x, y);
-                return v1+v2;
+                return (v1*influence) + (v2*(1-influence));
             }
         }
     }
