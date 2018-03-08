@@ -17,7 +17,7 @@ namespace NodeEditorFramework.TerrainGenerator
                 return true;
             }
         }
-        public override string Title { get { return "Terrain Wave Generation"; } }
+        public override string Title { get { return "Terrain Noise Generation"; } }
         public override Vector2 DefaultSize { get { return new Vector2(250, 150); } }
         
 
@@ -25,6 +25,7 @@ namespace NodeEditorFramework.TerrainGenerator
         public ValueConnectionKnob terrainKnob;
 
         public float scale;
+        public float strength;
         public int seed;
 
         public override void NodeGUI()
@@ -33,7 +34,8 @@ namespace NodeEditorFramework.TerrainGenerator
 
 
             seed = RTEditorGUI.IntField("Seed", seed);
-            scale = RTEditorGUI.Slider("Scale", scale, 0, 1000);
+            scale = RTEditorGUI.Slider("Scale", scale, 0, 30);
+            strength = RTEditorGUI.Slider("Strength", strength, 0, 5);
 
             if (GUI.changed)
             {
@@ -44,7 +46,7 @@ namespace NodeEditorFramework.TerrainGenerator
 
         public override bool Calculate()
         {
-            terrainKnob.SetValue(new NoiseTerrain(seed, scale));
+            terrainKnob.SetValue(new NoiseTerrain(seed, scale, strength));
 
             return true;
         }
@@ -54,13 +56,15 @@ namespace NodeEditorFramework.TerrainGenerator
     public class NoiseTerrain : TerrainFunc
     {
         public float scale;
+        public float strength;
         public int seed;
         System.Random prng;
         Vector2 rngOffset;
-        public NoiseTerrain(int seed, float scale)
+        public NoiseTerrain(int seed, float scale, float strength)
         {
             this.seed = seed;
             this.scale = scale;
+            this.strength = strength;
 
             if (scale == 0)
                 this.scale = .001f;
@@ -88,7 +92,7 @@ namespace NodeEditorFramework.TerrainGenerator
 
 
 
-            return Mathf.PerlinNoise(sampleX,sampleY);
+            return Mathf.PerlinNoise(sampleX,sampleY) * strength;
         }
     }
 }

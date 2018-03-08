@@ -78,6 +78,7 @@ public class MeshData
         mesh.triangles = triangles;
         mesh.uv = uvs;
         mesh.RecalculateNormals();
+        mesh.name = "Terrain";
         return mesh;
     }
 }
