@@ -73,10 +73,12 @@ public class APICommunication {
         yield return null;
     }
 
-    public static IEnumerator BingElevationRequest(Rect area, int gridRes, GeoWorld geoWorld)
+    public static IEnumerator BingElevationRequest(GeoArea area, int gridRes, GeoChunk geoChunk)
     {
+        GeoCoords sw = GeoUtils.ConvertToGeo(area.sw);
+        GeoCoords ne = GeoUtils.ConvertToGeo(area.ne);
 
-        string requestPath = bingPath + "Bounds?bounds=" + area.yMin + "," + area.xMin + "," + area.yMax + "," + area.xMax + "&rows=4&cols=4";
+        string requestPath = bingPath + "Bounds?bounds=" + sw.latitude + "," + sw.longitude + "," + ne.latitude + "," + ne.longitude + "&rows=" + gridRes + "&cols=" + gridRes;
 
 
         requestPath += "&key=" + bingKey;
@@ -95,7 +97,8 @@ public class APICommunication {
             Debug.Log(request.downloadHandler.text);
             //GoogleElevationResponse response = JsonConvert.DeserializeObject<GoogleElevationResponse>(request.downloadHandler.text);
             BingElevationResponse response = JsonConvert.DeserializeObject<BingElevationResponse>(request.downloadHandler.text);
-            
+
+            geoChunk.onDataReceived(response);
         }
 
         yield return null;

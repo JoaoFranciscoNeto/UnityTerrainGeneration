@@ -4,19 +4,19 @@ using UnityEngine;
 
 public class GeoChunk : MonoBehaviour {
 
-    // Corners of the region, CCW, from bottom-left
-    UTMCoords c1;
-    UTMCoords c2;
-    UTMCoords c3;
-    UTMCoords c4;
+    public GeoArea chunkArea;
 
-    // Use this for initialization
-    void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    MeshRenderer meshRenderer;
+    MeshFilter meshFilter;
+    
+    public void Create(GeoArea chunkArea)
+    {
+        this.chunkArea = chunkArea;
+        StartCoroutine(APICommunication.BingElevationRequest(chunkArea, 4, this));
+    }
+
+    public void onDataReceived(BingElevationResponse response)
+    {
+        Debug.Log(response.resourceSets[0].resources[0].elevations);
+    }
 }

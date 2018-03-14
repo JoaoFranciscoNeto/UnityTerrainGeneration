@@ -23,6 +23,18 @@ public static class GeoUtils
         return new UTMCoords(zone, band, easting, northing);
     }
 
+    public static GeoCoords ConvertToGeo(UTMCoords utmCoords)
+    {
+        int zone = utmCoords.zone;
+        //Transform to latlong
+        CoordinateTransformationFactory ctfac = new CoordinateTransformationFactory();
+        ICoordinateSystem wgs84geo = ProjNet.CoordinateSystems.GeographicCoordinateSystem.WGS84;
+        ICoordinateSystem utm = ProjNet.CoordinateSystems.ProjectedCoordinateSystem.WGS84_UTM(zone, utmCoords.isNorthernHemisphere());
+        ICoordinateTransformation trans = ctfac.CreateFromCoordinateSystems(utm, wgs84geo);
+        double[] pUtm = trans.MathTransform.Transform(new double[] { utmCoords.easting, utmCoords.northing });
+        return new GeoCoords(pUtm[1], pUtm[0]);
+    }
+
     private static int GetZone(double latitude, double longitude)
     {
         // Norway
@@ -124,6 +136,11 @@ public class UTMCoords
     public override string ToString()
     {
         return (zone + " " + band + " " + easting + " " + northing);
+    }
+
+    public bool isNorthernHemisphere()
+    {
+        return string.Compare(band, "N") >= 0;
     }
 }
 
