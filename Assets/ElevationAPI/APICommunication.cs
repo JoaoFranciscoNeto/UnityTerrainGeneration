@@ -4,61 +4,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class APICommunication : MonoBehaviour {
+public class APICommunication {
 
-    static string elevationPath = "https://maps.googleapis.com/maps/api/elevation/";
-    static string apiKey = "AIzaSyAl1Bz8x72uVaARqPtVwF0rvB2STkNI7cc";
+    static string googlePath = "https://maps.googleapis.com/maps/api/elevation/";
+    static string googleKey = "AIzaSyAl1Bz8x72uVaARqPtVwF0rvB2STkNI7cc";
 
-    public Vector2 fromCoords;
-    public Vector2 toCoords;
+    static string bingPath = "http://dev.virtualearth.net/REST/v1/Elevation/";
+    static string bingKey = "Aij5dZ_8Aewjql1V6eEmd-a2QH87_UdrwS3rQxAiguCX_LdZ4iRFVwnZ5Dxt_RUS";
+
     public int samples;
 
-    // Use this for initialization
-    void Start ()
-    {
-        //StartCoroutine(LineElevationRequest(fromCoords, toCoords, samples));
-
-
-    }
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
-
-    public static ElevationResponse LineElevationRequest(Vector2 from, Vector2 to, int nSamples)
-    {
-        //https://maps.googleapis.com/maps/api/elevation/json?path=36.578581,-118.291994|36.23998,-116.83171&samples=3&key=AIzaSyAl1Bz8x72uVaARqPtVwF0rvB2STkNI7cc
-
-        string requestPath = elevationPath + "json?path=" + from.x + "," + from.y + "|"+ to.x + "," + to.y + "&samples=" + nSamples + "&key=" + apiKey;
-
-        UnityWebRequest request = UnityWebRequest.Get(requestPath);
-
-        if(request.isNetworkError)
-        {
-            Debug.LogError(request.error);
-        }
-        else
-        {
-            Debug.Log(request.downloadHandler.text);
-            ElevationResponse response = JsonConvert.DeserializeObject<ElevationResponse>(request.downloadHandler.text);
-
-            if(response.status == "OK")
-            {
-                foreach (Result r in response.results)
-                {
-                    Debug.Log("(" + r.location.lat + "," + r.location.lng + ") -> " + r.elevation);
-                }
-            }
-            return response;
-        }
-        
-
-        return null;
-        
-    }
-
-    public static IEnumerator GridElevationRequest(Rect area, int gridRes)
+    public static IEnumerator GridElevationRequest(Rect area, int gridRes, GeoWorld geoWorld)
     {
         List<Vector2> samplePoints = new List<Vector2>();
 
@@ -76,7 +32,7 @@ public class APICommunication : MonoBehaviour {
             }
         }
 
-        string requestPath = elevationPath + "json?locations=";
+        string requestPath = googlePath + "json?locations=";
 
         for (int pIndex = 0; pIndex < samplePoints.Count; pIndex++)
         {
@@ -87,7 +43,7 @@ public class APICommunication : MonoBehaviour {
             }
         }
 
-        requestPath += "&key=" + apiKey;
+        requestPath += "&key=" + googleKey;
 
         Debug.Log(requestPath);
 
@@ -101,7 +57,7 @@ public class APICommunication : MonoBehaviour {
         else
         {
             Debug.Log(request.downloadHandler.text);
-            ElevationResponse response = JsonConvert.DeserializeObject<ElevationResponse>(request.downloadHandler.text);
+            GoogleElevationResponse response = JsonConvert.DeserializeObject<GoogleElevationResponse>(request.downloadHandler.text);
 
             if (response.status == "OK")
             {
@@ -110,13 +66,38 @@ public class APICommunication : MonoBehaviour {
                     Debug.Log("(" + r.location.lat + "," + r.location.lng + ") -> " + r.elevation);
                 }
 
-                FindObjectOfType<GeoWorld>().onElevationRequestComplete(response);
+
             }
         }
 
         yield return null;
     }
 
+    public static IEnumerator BingElevationRequest(Rect area, int gridRes, GeoWorld geoWorld)
+    {
 
-    
+        string requestPath = bingPath + "Bounds?bounds=" + area.yMin + "," + area.xMin + "," + area.yMax + "," + area.xMax + "&rows=4&cols=4";
+
+
+        requestPath += "&key=" + bingKey;
+
+        Debug.Log(requestPath);
+
+        UnityWebRequest request = UnityWebRequest.Get(requestPath);
+        yield return request.SendWebRequest();
+
+        if (request.isNetworkError)
+        {
+            Debug.LogError(request.error);
+        }
+        else
+        {
+            Debug.Log(request.downloadHandler.text);
+            //GoogleElevationResponse response = JsonConvert.DeserializeObject<GoogleElevationResponse>(request.downloadHandler.text);
+            BingElevationResponse response = JsonConvert.DeserializeObject<BingElevationResponse>(request.downloadHandler.text);
+            
+        }
+
+        yield return null;
+    }
 }

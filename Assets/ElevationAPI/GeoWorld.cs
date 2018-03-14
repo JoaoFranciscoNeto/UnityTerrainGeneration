@@ -8,74 +8,55 @@ public class GeoWorld : MonoBehaviour
 {
 
     public Vector2Int gridSize;
-
-    public Vector2 centerPoint;
-    public Vector2 areaSize;
-
+    
     public Vector2 p1;
     public Vector2 p2;
 
-    // Corners of the region, CCW, from bottom-left
-    UTMCoords c1;
-    UTMCoords c2;
-    UTMCoords c3;
-    UTMCoords c4;
+    public GeoArea area;
+    public List<GeoArea> chunksAreas;
 
 
-    public Result[,] geoData;
-    float[,] heightMap;
-
-    float xMin, yMin, xMax, yMax;
+    Vector3 offsetToCenter;
 
     // Use this for initialization
     void Start()
     {
-        geoData = new Result[gridSize.x, gridSize.y];
-
-        ProcessArea();
-
-        //StartCoroutine(APICommunication.GridElevationRequest(new Rect(xMin, yMin, xMax - xMin, yMax - yMin), gridSize.x));
 
         Debug.Log(GeoUtils.ConvertToUTM(new GeoCoords(p1.x, p1.y)));
 
-        c1 = GeoUtils.ConvertToUTM(new GeoCoords(p1));
-        c2 = GeoUtils.ConvertToUTM(new GeoCoords(p1.x, p2.y));
-        c3 = GeoUtils.ConvertToUTM(new GeoCoords(p2));
-        c4 = GeoUtils.ConvertToUTM(new GeoCoords(p2.x, p1.y));
+        area = new GeoArea(GeoUtils.ConvertToUTM(new GeoCoords(p1.x, p1.y)), GeoUtils.ConvertToUTM(new GeoCoords(p2.x, p2.y)));
 
-        Debug.Log("Distance " + UTMCoords.Distance(c1, c2));
+        Debug.Log(area);
 
+        chunksAreas = area.SubdivideArea(3, 4);
+
+        foreach (GeoArea area in chunksAreas)
+        {
+            Debug.Log(area);
+        }
+
+        offsetToCenter = new Vector3(-((float)area.sw.easting + (float)area.width / 2f), 0, -((float)area.sw.northing + (float)area.length / 2f));
     }
 
-
-    void ProcessArea()
+    private void OnDrawGizmos()
     {
-        if (p1.x <= p2.x)
-        {
-            xMin = p1.x;
-            xMax = p2.x;
-        }
-        else
-        {
-            xMin = p2.x;
-            xMax = p1.x;
-        }
+        if (chunksAreas == null)
+            return;
 
-        if (p1.y <= p2.y)
+
+        foreach (GeoArea area in chunksAreas)
         {
-            yMin = p1.y;
-            yMax = p2.y;
-        }
-        else
-        {
-            yMin = p2.y;
-            yMax = p1.y;
+            Gizmos.DrawWireCube(
+                new Vector3((float)area.sw.easting + (float)area.width / 2f, 0, (float)area.sw.northing + (float)area.length / 2f) + offsetToCenter,
+                new Vector3((float)area.width, 1, (float)area.length)                
+                );
         }
     }
-
-    public void onElevationRequestComplete(ElevationResponse response)
+    /*
+    public void onElevationRequestComplete(GoogleElevationResponse response)
     {
         double lowestAltitude = double.MaxValue;
+        double heighestAltitude = double.MinValue;
 
         for (int y = 0; y < gridSize.y; y++)
         {
@@ -86,8 +67,13 @@ public class GeoWorld : MonoBehaviour
                 {
                     lowestAltitude = geoData[x, y].elevation;
                 }
+                else if (geoData[x, y].elevation > heighestAltitude)
+                {
+                    heighestAltitude = geoData[x, y].elevation;
+                }
             }
         }
+
 
         heightMap = new float[gridSize.x, gridSize.y];
 
@@ -99,14 +85,17 @@ public class GeoWorld : MonoBehaviour
             }
         }
 
-        MeshData meshData = MeshGeneration.GenerateMeshFromHeigthMap(heightMap, .05f);
+        MeshData meshData = MeshGeneration.GenerateMeshFromHeigthMap(heightMap, 1);
 
         GetComponent<MeshFilter>().mesh = meshData.CreateMesh();
 
         Debug.Log("Populated GeoData");
-    }
 
-    
+        zoneSize.y = (float)(heighestAltitude - lowestAltitude);
+    }*/
+
+
+
 }
 
 
@@ -124,8 +113,32 @@ public class Result
     public double resolution { get; set; }
 }
 
-public class ElevationResponse
+public class GoogleElevationResponse
 {
     public List<Result> results { get; set; }
     public string status { get; set; }
+}
+
+public class Resource
+{
+    public string __type { get; set; }
+    public List<int> elevations { get; set; }
+    public int zoomLevel { get; set; }
+}
+
+public class ResourceSet
+{
+    public int estimatedTotal { get; set; }
+    public List<Resource> resources { get; set; }
+}
+
+public class BingElevationResponse
+{
+    public string authenticationResultCode { get; set; }
+    public string brandLogoUri { get; set; }
+    public string copyright { get; set; }
+    public List<ResourceSet> resourceSets { get; set; }
+    public int statusCode { get; set; }
+    public string statusDescription { get; set; }
+    public string traceId { get; set; }
 }

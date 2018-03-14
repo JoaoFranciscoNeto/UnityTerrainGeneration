@@ -4,8 +4,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class GeoUtils {
-    
+public static class GeoUtils
+{
+
     public static UTMCoords ConvertToUTM(GeoCoords geoCoords)
     {
         int zone = GetZone(geoCoords.latitude, geoCoords.longitude);
@@ -90,6 +91,8 @@ public static class GeoUtils {
     }
 }
 
+
+
 public class UTMCoords
 {
     public int zone;
@@ -105,7 +108,15 @@ public class UTMCoords
         this.northing = northing;
     }
 
-    public static float Distance (UTMCoords c1, UTMCoords c2)
+    public UTMCoords(UTMCoords zoneband, double easting, double northing)
+    {
+        this.zone = zoneband.zone;
+        this.band = zoneband.band;
+        this.easting = easting;
+        this.northing = northing;
+    }
+
+    public static float Distance(UTMCoords c1, UTMCoords c2)
     {
         return Vector2.Distance(new Vector2((float)c1.easting, (float)c1.northing), new Vector2((float)c2.easting, (float)c2.northing));
     }
@@ -132,4 +143,66 @@ public class GeoCoords
         latitude = coords.x;
         longitude = coords.y;
     }
+}
+
+public class GeoArea
+{
+    // Corners of the region, CCW, from SW
+    public UTMCoords sw;
+    public UTMCoords se;
+    public UTMCoords ne;
+    public UTMCoords nw;
+
+    public double width;
+    public double length;
+
+    public double area;
+
+    public GeoArea(UTMCoords SWcorner, UTMCoords NEcorner)
+    {
+        if (SWcorner.zone != NEcorner.zone || SWcorner.band != NEcorner.band)
+            Debug.LogError("Corners of the area must be in the same zone and band");
+
+        sw = new UTMCoords(SWcorner.zone, SWcorner.band, SWcorner.easting, SWcorner.northing);
+        se = new UTMCoords(SWcorner.zone, SWcorner.band, NEcorner.easting, SWcorner.northing);
+        ne = new UTMCoords(SWcorner.zone, SWcorner.band, NEcorner.easting, NEcorner.northing);
+        nw = new UTMCoords(SWcorner.zone, SWcorner.band, SWcorner.easting, NEcorner.northing);
+
+        width = UTMCoords.Distance(sw, se);
+        length = UTMCoords.Distance(sw, nw);
+
+        area = width * length;
+    }
+
+    public List<GeoArea> SubdivideArea(int cols, int rows)
+    {
+        List<GeoArea> newAreas = new List<GeoArea>();
+
+        double cellWidth = width / cols;
+        double cellLength = length / rows;
+
+        for (int x = 0; x < cols; x++)
+        {
+            for (int y = 0; y < rows; y++)
+            {
+                newAreas.Add(new GeoArea(
+                    new UTMCoords(sw,
+                    sw.easting + x * cellWidth,
+                    sw.northing + y * cellLength),
+                    new UTMCoords(sw,
+                    sw.easting + (x+1) * cellWidth,
+                    sw.northing + (y+1) * cellLength)
+                    ));
+            }
+        }
+
+        return newAreas;
+    }
+
+    public override string ToString()
+    {
+        return ("Area width " + width + " length " + length + "\tSW " + sw + "\tNE" + ne);
+    }
+
+
 }
