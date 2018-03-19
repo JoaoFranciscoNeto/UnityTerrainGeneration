@@ -83,7 +83,7 @@ public class APICommunication {
 
         requestPath += "&key=" + bingKey;
 
-        Debug.Log(requestPath);
+
 
         UnityWebRequest request = UnityWebRequest.Get(requestPath);
         yield return request.SendWebRequest();
@@ -94,10 +94,9 @@ public class APICommunication {
         }
         else
         {
-            Debug.Log(request.downloadHandler.text);
+
             //GoogleElevationResponse response = JsonConvert.DeserializeObject<GoogleElevationResponse>(request.downloadHandler.text);
             BingElevationResponse response = JsonConvert.DeserializeObject<BingElevationResponse>(request.downloadHandler.text);
-
             geoChunk.onDataReceived(response);
         }
 

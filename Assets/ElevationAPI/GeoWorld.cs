@@ -17,7 +17,7 @@ public class GeoWorld : MonoBehaviour
 
     public GameObject chunkPrefab;
 
-    Vector3 offsetToCenter;
+    public static Vector3 offsetToCenter;
 
     // Use this for initialization
     void Start()
@@ -26,9 +26,9 @@ public class GeoWorld : MonoBehaviour
         
         area = new GeoArea(GeoUtils.ConvertToUTM(new GeoCoords(p1.x, p1.y)), GeoUtils.ConvertToUTM(new GeoCoords(p2.x, p2.y)));
 
+        offsetToCenter = new Vector3(-((float)area.sw.easting + (float)area.width / 2f), 0, -((float)area.sw.northing + (float)area.length / 2f));
 
-
-        chunksAreas = area.SubdivideArea(3, 4);
+        chunksAreas = area.SubdivideArea(4, 4);
 
         foreach (GeoArea area in chunksAreas)
         {
@@ -38,7 +38,7 @@ public class GeoWorld : MonoBehaviour
 
         }
 
-        offsetToCenter = new Vector3(-((float)area.sw.easting + (float)area.width / 2f), 0, -((float)area.sw.northing + (float)area.length / 2f));
+        
     }
 
     private void OnDrawGizmos()

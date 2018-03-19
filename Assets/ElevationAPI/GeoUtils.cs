@@ -175,6 +175,8 @@ public class GeoArea
 
     public double area;
 
+    public Vector2 center;
+
     public GeoArea(UTMCoords SWcorner, UTMCoords NEcorner)
     {
         if (SWcorner.zone != NEcorner.zone || SWcorner.band != NEcorner.band)
@@ -189,6 +191,8 @@ public class GeoArea
         length = UTMCoords.Distance(sw, nw);
 
         area = width * length;
+
+        center = new Vector2((float)(sw.easting + width / 2f), (float)(sw.northing + length / 2f));
     }
 
     public List<GeoArea> SubdivideArea(int cols, int rows)
