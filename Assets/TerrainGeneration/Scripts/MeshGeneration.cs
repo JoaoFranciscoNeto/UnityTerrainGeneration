@@ -6,7 +6,7 @@ public static class MeshGeneration {
 
     public static MeshData GenerateMeshFromHeigthMap(float[,] heightMap, float heightMultiplier)
     {
-        float uvScale = 40f;
+        float uvScale = 2f;
 
         int width = heightMap.GetLength(0);
         int height = heightMap.GetLength(1);
@@ -37,7 +37,38 @@ public static class MeshGeneration {
         return meshData;
     }
 
+    public static MeshData GenerateGeoMesh(float[,] data)
+    {
+        int cols = data.GetLength(0);
+        int rows = data.GetLength(1);
+        
 
+        MeshData meshData = new MeshData(cols, rows);
+        int vIndex = 0;
+
+        for (int y = 0; y < rows; y++)
+        {
+            for (int x = 0; x < cols; x++)
+            {
+                meshData.vertices[vIndex] = new Vector3((float)x / (cols-1), data[x, y], (float)y / (rows-1));
+                meshData.uvs[vIndex] = new Vector2(x / (float)cols, y / (float)rows);
+
+                if (x < cols - 1 && y < rows - 1)
+                {
+                    int c0 = vIndex;
+                    int c1 = vIndex + 1;
+                    int c2 = vIndex + cols;
+                    int c3 = vIndex + cols + 1;
+
+                    meshData.AddTriangle(c0, c2, c3);
+                    meshData.AddTriangle(c3, c1, c0);
+                }
+                vIndex++;
+            }
+        }
+
+        return meshData;
+    }
 }
 
 public class MeshData
