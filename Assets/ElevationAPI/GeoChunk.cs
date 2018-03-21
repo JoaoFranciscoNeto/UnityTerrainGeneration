@@ -8,7 +8,7 @@ public class GeoChunk : MonoBehaviour {
     
     MeshFilter meshFilter;
 
-    int res = 4;
+    int res = 32;
     
     public void Create(GeoArea chunkArea)
     {
